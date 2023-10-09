@@ -8,7 +8,7 @@ Acronyms
 
 A _sender_ sketch reads data from a source (webcam, video, or recorded points) and emits it via [Remote](https://github.com/clinth/remote)
 
-This sketch shouldn't need to be modified. In `pose-head`, we show how to embed the source in the page via an `IFRAME`. The downside of this is that with every little change in your code, the sender has to also reload - and this can be cumbersome when we are accessing media.
+This sketch shouldn't need to be modified, but it is how some Tensorflow settings can be tweaked. In `pose/head`, we show how to embed the source in the page via an `IFRAME`. The downside of this is that with every little change in your code, the sender has to also reload - and this can be cumbersome when we are accessing media.
 
 Instead, the idea is to open the sender sketch in a separate window and leave it running. Note that if you minimise or cover it over with another window too much, the browser may suspend Javascript execution (as a battery-saving mechanism).
 
@@ -83,8 +83,8 @@ remote.onData = (packet) {
 
 * Get all the poses from a particular sender: `getFromSender(senderId)`
 * Get all sender ids: `getSenderIds`
-* Get all raw pose data regardless of sender: `getValues` (`getValuesByAge` sorts by last updated)
-* Get all trackers, regardless of sender: `getTrackers` (`getTrackersByAge` sorts by last updated)
+* Get all raw pose data regardless of sender: `getRawPoses` (`getRawPosesByAge` sorts by last updated)
+* Get all trackers, regardless of sender: `get` (`getByAge` sorts by last updated)
 
 Example:
 ```js
@@ -93,7 +93,7 @@ for (const tracker of poses.getFromSender(senderId)) {
   // Since we have the tracker, we can do low-level work with keypoints
 }
 
-for (const pose of poses.getValuesByAge()) {
+for (const pose of poses.getRawPosesByAge()) {
   // Process all poses, sorted by age
   // This is the raw, last received pose without any additional history
 }
@@ -103,21 +103,21 @@ for (const pose of poses.getValuesByAge()) {
 
 Since we may have multiple senders which may have overlapping pose ids, to access a pose, we need the sender's id as well as the pose id.
 
-Use `getTrackerByGuid(guid)` to get the tracker, or `getValueByGuid` to get the raw pose data.
+Use `getByGuid(guid)` to get the tracker, or `getRawPoseByGuid` to get the raw pose data.
 ```js
 // Get the corresponding tracker
-const trackerForPose = poses.getTrackerByGuid(`902-42-10`);
+const trackerForPose = poses.getByGuid(`902-42-10`);
 // Get the last raw pose data
-const poseData = poses.getValueByGuid(`902-42-10`);
+const poseData = poses.getRawPoseByGuid(`902-42-10`);
 ```
 
-If we don't have the sender id for some reason, or if you can be sure there's only one sender, you can get a pose by it's id with `getTrackerByPoseId`. This returns a `PoseTracker` instance.
+If we don't have the sender id for some reason, or if you can be sure there's only one sender, you can get a pose by it's id with `getByPoseId`. This returns a `PoseTracker` instance.
 
 ```js
 // Get the corresponding tracker
-const trackerForPose = poses.getTrackerByPoseId(`10`);
+const trackerForPose = poses.getByPoseId(`10`);
 // Get the last raw pose data
-const poseData = poses.getValueByPoseId(`10`);
+const poseData = poses.getRawPoseByPoseId(`10`);
 ```
 
 # PoseTracker
@@ -168,6 +168,13 @@ To get the raw value:
 const nosePoint = pose.keypointValue(`nose`); // {x,y}
 ```
 
+To get raw keypoints across all poses:
+```js
+for (const kp of poses.getRawKeypoints(`nose`)) {
+  // {x,y,score,name}
+}
+```
+
 ## Raw poses
 
 If you have a raw pose, keypoints are stored as a numbered array. To access a keypoint by name:
@@ -185,6 +192,35 @@ for (const kp of rawPose.keypoints) {
 # Recording
 
 * Point data is recorded to the browser's local storage. Image data is are not stored.
+
+# Util.js
+
+Import:
+```js
+import * as PoseUtil from '../Util.js';
+```
+
+Sort array of poses horizontally:
+```js
+const sorted = PoseUtil.horizontalSort(poses);
+```
+
+Get centroid of pose (including all keypoints):
+```js
+const centroid = PoseUtil.centroid(pose); // {x,y}
+```
+
+Return a line between two named points. If either of the points is not found, _undefined_ is returned. This is useful for using with ixfx's Line module.
+```js
+const line = PoseUtil.lineBetween(pose, `left_shoulder`, `right_shoulder`);
+// { a: { x, y }, b: { x, y } }
+```
+
+Gets the center based on the torso (between shoulders and hips). If
+any of the needed points is not found, _undefined_ is returned.
+```js
+const c = PoseUtils.roughCenter(pose); // { x, y }
+```
 
 # Troubleshooting
 
