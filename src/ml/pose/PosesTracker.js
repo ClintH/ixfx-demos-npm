@@ -1,6 +1,5 @@
-import * as Types from '../lib/Types.js';
+import * as MoveNet from '../lib/bundle.js';
 import { PoseTracker } from './PoseTracker.js';
-import * as Coco from '../lib/Coco.js';
 /**
  * @typedef {Readonly<{
  * maxAgeMs:number
@@ -53,7 +52,8 @@ export class PosesTracker {
 
   
   /**
-   * Enumerates each of the PoseTrackers, sorted by age
+   * Enumerates each of the PoseTrackers, sorted by age.
+   * The most recent pose will be at position 0.
    * (ie. one for each body).
    * Use getRawPosesByAge() to enumerate raw pose data
    */
@@ -61,6 +61,26 @@ export class PosesTracker {
     const trackers = [...this.#data.values()];
     trackers.sort((a,b)=>a.elapsed-b.elapsed);
     yield* trackers.values();
+  }
+
+  /**
+   * Enumerates PoseTrackers, sorting by score.
+   * The higest score will be at position 0
+   */
+  *getByScore() {
+    const trackers = [...this.#data.values()];
+    trackers.sort((a,b)=>b.score-a.score);
+    yield* trackers.values();
+  }
+
+  /**
+   * Enumerates PoseTrackers, sorting by the horizontal position.
+   * Leftmost pose will be at position 0.
+   */
+  *getByHorizontal() {
+    const trackers = [...this.#data.values()];
+    trackers.sort((a,b) => a.middle.x-b.middle.x);
+    yield* trackers;
   }
 
   /**
@@ -93,7 +113,7 @@ export class PosesTracker {
    * @param {string} name 
    */
   *getRawKeypoints(name) {
-    const index = Coco.nameToIndex.get(name);
+    const index = MoveNet.Coco.nameToIndex.get(name);
     if (index === undefined) throw new Error(`Keypoint unknown: '${name}'`);
     for (const pose of this.getRawPoses()) {
       const kp = pose.keypoints[index];
@@ -107,7 +127,7 @@ export class PosesTracker {
    * @param {string} name 
    */
   *getPointTrackers(name) {
-    const index = Coco.nameToIndex.get(name);
+    const index = MoveNet.Coco.nameToIndex.get(name);
     if (index === undefined) throw new Error(`Keypoint unknown: '${name}'`);
     for (const tracker of this.get()) {
       yield tracker.keypoint(name);
@@ -197,7 +217,7 @@ export class PosesTracker {
    * Track a pose.
    * Fires `added` event if it is a new pose.
    * Returns the globally-unique id for this pose
-   * @param {Types.Pose} pose 
+   * @param {MoveNet.Pose} pose 
    * @param {string} from
    */
   seen(from, pose) {
