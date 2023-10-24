@@ -16,7 +16,7 @@ export class PoseTracker {
   /** @type number */
   #hue;
 
-  
+
   /**
    * 
    * @param {string} fromId
@@ -29,6 +29,17 @@ export class PoseTracker {
     this.#guid = fromId+`-`+poseId;
     this.#hue = Math.random() * 360;
     this.points = pointsTracker({id:poseId, ...options});
+  }
+
+  get box() {
+    return this.last.box;
+  }
+  
+  /**
+   * Returns the id of the sender
+   */
+  get peerId() {
+    return this.#fromId;
   }
 
   /**
@@ -165,5 +176,22 @@ export class PoseTracker {
 
   get last() {
     return this.#data;
+  }
+
+  /**
+   * Returns all the PointTrackers (ie. keypoints) for this pose
+   */
+  *getPointTrackers() {
+    yield* this.points.store.values();
+  }
+
+  /**
+     * Returns the raw KeyPoints
+     * @returns {Generator<MoveNet.Keypoint>}
+     */
+  *getRawValues() {
+    for (const v of this.points.store.values()) {
+      yield v.last;
+    }
   }
 }
