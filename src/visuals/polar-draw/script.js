@@ -32,7 +32,7 @@ const settings = Object.freeze({
   osc: Oscillators.sine(0.1),
   osc2: Oscillators.sine(0.15),
   overlayCanvas: new Dom.CanvasHelper(`#overlay`, {
-    fill: `viewport`, onResize: (size) => {
+    fill: `viewport`, onResize: (context, size) => {
       saveState({
         scaleBy: Math.min(size.height, size.width)
       });
