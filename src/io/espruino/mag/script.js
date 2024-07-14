@@ -1,34 +1,27 @@
+
 import { delay } from '../../../ixfx/flow.js';
 import { Espruino } from '../../../ixfx/io.js';
 import { setCssDisplay, setHtml } from './util.js';
 
-// Two alternative scripts to run on the Puck
-const scripts = Object.freeze({
-  // 1. Polls data at interval of 1 second
-  // 2. Reboots Puck if Bluetooth disconnects, saving battery life.
-  poll: `
-  setInterval( () => { Bluetooth.println(JSON.stringify(Puck.accel())) }, 1000);
-  NRF.on('disconnect',() => reset());
-  `,
-  // Sends back data as fast as it can
-  stream: `
-  Puck.accelOn(12.5);
-  Puck.on('accel', (a) => { Bluetooth.println(JSON.stringify(a)); });
-  NRF.on('disconnect',()=>reset());
-  `
-});
 
 const settings = Object.freeze({
-  // Use the slower polling method (use scripts.stream alternatively)
-  script: scripts.poll,
+  // Script to execute on Espruino
+  script:
+    `
+    Puck.magOn();
+    Puck.on('mag', xyx => {
+      Bluetooth.println(JSON.stringify(accel));
+    });
+    NRF.on("disconnect", () => reset());
+    `,
   // Filter device list
   device: `` // Put in the name of your device here, eg `Puck.js a123`
 });
 
 /**
  * @typedef {Readonly<{
- *  acc: Vector3d
- *  gyro: Vector3d
+ * acc: Vector3d
+ * gyro: Vector3d
  * }>} State
  */
 
@@ -40,6 +33,7 @@ let state = Object.freeze({
 
 function use() {
   const { acc, gyro } = state;
+
   setHtml(`lblAcc`, `acc:   x: ${acc.x} y: ${acc.y} z: ${acc.z}`);
   setHtml(`lblGyro`, `gyro: x: ${gyro.x} y: ${gyro.y} z: ${gyro.z}`);
 };
@@ -70,8 +64,10 @@ function onData(event) {
   }
 };
 
+
 async function connect() {
   const { script } = settings;
+
   try {
     // Filter by name, if defined in settings
     const options = settings.device.length > 0 ? { name: settings.device } : {};
@@ -84,6 +80,7 @@ async function connect() {
     p.addEventListener(`change`, event => {
       console.log(`${event.priorState} -> ${event.newState}`);
     });
+
 
     // Send script after a moment
     delay(async () => {
@@ -126,8 +123,8 @@ function saveState(s) {
 
 /**
  * @typedef {Readonly<{
- *  x: number
- *  y: number
- *  z: number
- * }>} Vector3d
+* x: number
+* y: number
+* z: number
+* }>} Vector3d
 */
