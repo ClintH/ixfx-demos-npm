@@ -1,8 +1,14 @@
 {
-  "port": 5555,
+  "port": "5555",
   "open": false,
-  "watch": [
-    "**/*"
-  ],
-  "navigate": false
+  "cors": true,
+  "root": "./docs",
+  "navigator": false,
+  "https": false,
+  "withExtension": "never",
+  "useLocalIp": false,
+  "ignore": [
+    "node_modules",
+    "ixfx"
+  ]
 }
