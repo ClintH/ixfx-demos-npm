@@ -9,15 +9,15 @@
   // These tasks can be run from CodeSandbox. Running one will open a log in the app.
   "tasks": {
     "start": {
-      "name": "start",
+      "name": "Start",
       "command": "npm run start",
-      "runAtStart": false,
+      "runAtStart": true,
       "preview": {
         "port": 5555
       }
     },
     "ws": {
-      "name": "ws",
+      "name": "Start with WS",
       "command": "npm run ws",
       "runAtStart": false,
       "preview": {
