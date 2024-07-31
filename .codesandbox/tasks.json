@@ -16,13 +16,17 @@
         "port": 5555
       }
     },
-    "ws": {
+    "start-ws": {
       "name": "Start with WS",
       "command": "npm run ws",
       "runAtStart": false,
       "preview": {
         "port": 5555
       }
+    },
+    "install": {
+      "name": "Install dependencies",
+      "command": "npm install"
     }
   }
 }
