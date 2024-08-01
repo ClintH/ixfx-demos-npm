@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "dbaeumer.vscode-eslint",
-    "motform.ixfx-highlight"
+    "motform.ixfx-highlight",
+    "yandeu.five-server"
   ]
 }
